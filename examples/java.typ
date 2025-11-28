@@ -1,72 +1,49 @@
-#import "../ebnf.typ": *
-#set page(
-  width: auto,
-  height: auto,
-  margin: .5cm,
-  fill: white,
-)
+#import "@preview/nutthead-ebnf:0.1.0": *
 
-// Java grammar example with custom fonts
+#set page(width: auto, height: auto, margin: .5cm, fill: white)
+
+// Java grammar example with custom font
 #ebnf(
   mono-font: "Fira Mono",
-  body-font: "IBM Plex Serif",
-  Prod(
-    N[ClassDecl],
+  prod(
+    n[ClassDecl],
     {
-      Or[#Opt[#N[Modifier]] #T[class] #N[Ident] #Opt[#T[extends] #N[Type]] #N[ClassBody]][class declaration]
+      alt[#opt[#n[Modifier]] #t[class] #n[Ident] #opt[#t[extends] #n[Type]] #n[ClassBody]][class declaration]
     },
   ),
-  Prod(
-    N[Modifier],
+  prod(n[Modifier], {
+    alt[#t[public]][access modifier]
+    alt[#t[private]][]
+    alt[#t[protected]][]
+    alt[#t[static]][other modifiers]
+    alt[#t[final]][]
+    alt[#t[abstract]][]
+  }),
+  prod(n[ClassBody], {
+    alt[#t[\{] #rep[#n[Member]] #t[\}]][class body]
+  }),
+  prod(n[Member], {
+    alt[#n[FieldDecl]][member declaration]
+    alt[#n[MethodDecl]][]
+    alt[#n[ConstructorDecl]][]
+  }),
+  prod(
+    n[MethodDecl],
     {
-      Or[#T[public]][access modifier]
-      Or[#T[private]][]
-      Or[#T[protected]][]
-      Or[#T[static]][other modifiers]
-      Or[#T[final]][]
-      Or[#T[abstract]][]
+      alt[#rep[#n[Modifier]] #n[Type] #n[Ident] #t[\(] #opt[#n[Params]] #t[\)] #n[Block]][method]
     },
   ),
-  Prod(
-    N[ClassBody],
-    {
-      Or[#T[\{] #Rep[#N[Member]] #T[\}]][class body]
-    },
-  ),
-  Prod(
-    N[Member],
-    {
-      Or[#N[FieldDecl]][member declaration]
-      Or[#N[MethodDecl]][]
-      Or[#N[ConstructorDecl]][]
-    },
-  ),
-  Prod(
-    N[MethodDecl],
-    {
-      Or[#Rep[#N[Modifier]] #N[Type] #N[Ident] #T[\(] #Opt[#N[Params]] #T[\)] #N[Block]][method]
-    },
-  ),
-  Prod(
-    N[Params],
-    {
-      Or[#N[Param] #Rep[#T[,] #N[Param]]][parameter list]
-    },
-  ),
-  Prod(
-    N[Type],
-    {
-      Or[#N[PrimitiveType]][type]
-      Or[#N[ReferenceType]][]
-    },
-  ),
-  Prod(
-    N[PrimitiveType],
-    {
-      Or[#T[int]][primitive types]
-      Or[#T[boolean]][]
-      Or[#T[char]][]
-      Or[#T[void]][]
-    },
-  ),
+  prod(n[Params], {
+    alt[#n[Param] #rep[#t[,] #n[Param]]][parameter list]
+  }),
+  prod(n[Type], {
+    alt[#n[PrimitiveType]][type]
+    alt[#n[ReferenceType]][]
+  }),
+  prod(n[PrimitiveType], {
+    alt[#t[int]][primitive types]
+    alt[#t[boolean]][]
+    alt[#t[char]][]
+    alt[#t[void]][]
+  }),
 )
