@@ -12,16 +12,16 @@ A Typst package for rendering Extended Backus-Naur Form (EBNF) grammars with cus
 #ebnf(
   mono-font: "JetBrains Mono",
   body-font: "DejaVu Serif",
-  Prod(
-    N[Expression],
+  prod(
+    n[Expression],
     {
-      Or[#N[Term] #Rep[#T[+] #N[Term]]][arithmetic expression]
+      alt[#n[Term] #rep[#t[+] #n[Term]]][arithmetic expression]
     },
   ),
-  Prod(
-    N[Term],
+  prod(
+    n[Term],
     {
-      Or[#N[Factor] #Rep[#T[*] #N[Factor]]][multiplication]
+      alt[#n[Factor] #rep[#t[*] #n[Factor]]][multiplication]
     },
   ),
 )
@@ -41,42 +41,53 @@ Renders an EBNF grammar as a formatted grid.
 | `production-spacing` | `length`        | `0.5em`           | Extra vertical space between productions |
 | `column-gap`         | `length`        | `0.75em`          | Horizontal spacing between columns       |
 | `row-gap`            | `length`        | `0.5em`           | Vertical spacing between rows            |
-| `..body`             | `Prod()`        | —                 | Production rules                         |
+| `..body`             | `prod()`        | —                 | Production rules                         |
 
-### `Prod()`
+### `prod()`
 
 Defines a production rule.
 
 ```typst
-Prod(
-  N[NonTerminal],        // Left-hand side
+prod(
+  n[NonTerminal],        // Left-hand side
   annot: "description",  // Optional production annotation
   delim: "::=",          // Optional custom delimiter (default: auto)
   {
-    Or[...][annotation]  // One or more alternatives
+    alt[...][annotation]  // One or more alternatives
   },
 )
 ```
 
-### `Or()`
+### `alt()`
 
 Defines an alternative in a production's right-hand side.
 
 ```typst
-Or[#T[terminal] #N[NonTerminal]][optional annotation]
+alt[#t[terminal] #n[NonTerminal]][optional annotation]
 ```
 
 ### Symbol Functions
 
-| Function    | Description                      | Example                 |
-| ----------- | -------------------------------- | ----------------------- |
-| `T[...]`    | Terminal symbol                  | `T[if]`                 |
-| `N[...]`    | Non-terminal reference (italic)  | `N[Expr]`               |
-| `NT[...]`   | Non-terminal with angle brackets | `NT[digit]` → ⟨_digit_⟩ |
-| `Opt[...]`  | Optional: `[content]`            | `Opt[#T[else]]`         |
-| `Rep[...]`  | Zero or more: `{content}`        | `Rep[#N[Stmt]]`         |
-| `Rep1[...]` | One or more: `{content}+`        | `Rep1[#T[a]]`           |
-| `Grp[...]`  | Grouping: `(content)`            | `Grp[#T[a] #T[b]]`      |
+| Function     | Description                      | Example                  |
+| ------------ | -------------------------------- | ------------------------ |
+| `t[...]`     | Terminal symbol                  | `t[if]`                  |
+| `n[...]`     | Non-terminal reference (italic)  | `n[Expr]`                |
+| `nt[...]`    | Non-terminal with angle brackets | `nt[digit]` → ⟨_digit_⟩  |
+| `opt[...]`   | Optional: `[content]`            | `opt[#t[else]]`          |
+| `rep[...]`   | Zero or more: `{content}`        | `rep[#n[Stmt]]`          |
+| `rep-1[...]` | One or more: `{content}+`        | `rep-1[#t[a]]`           |
+| `grp[...]`   | Grouping: `(content)`            | `grp[#t[a] #t[b]]`       |
+
+### ISO 14977 Functions
+
+| Function              | Description                    | Example                          |
+| --------------------- | ------------------------------ | -------------------------------- |
+| `exc(a, b)`           | Exception: `a − b` (a except b)| `exc(n[letter], t[x])`           |
+| `seq(...)`            | Concatenation: `a , b , c`     | `seq(t[a], t[b], t[c])`          |
+| `times(n, x)`         | Repetition count: `n ∗ x`      | `times(3, t[a])`                 |
+| `special[...]`        | Special sequence: `? ... ?`    | `special[any character]`         |
+| `ebnf-comment[...]`   | Comment: `(* ... *)`           | `ebnf-comment[deprecated]`       |
+| `empty`               | Empty/epsilon: `ε`             | `alt[#empty][empty production]`  |
 
 ## Color Schemes
 
@@ -92,6 +103,7 @@ Distinct colors for each element type:
 - **Operator**: Red (`#a51d2d`)
 - **Delimiter**: Gray (`#5e5c64`)
 - **Annotation**: Brown (`#986a44`)
+- **Comment**: Gray (`#5e5c64`)
 
 ### `colors-plain`
 
@@ -107,6 +119,7 @@ No colors applied (all elements use default text color).
   operator: rgb("#ff0000"),
   delim: rgb("#808080"),
   annot: rgb("#666666"),
+  comment: rgb("#808080"),
 )
 
 #ebnf(colors: my-colors, ...)
@@ -131,18 +144,18 @@ This approach optimizes horizontal space while maintaining readability.
 #ebnf(
   mono-font: "JetBrains Mono",
   body-font: "DejaVu Serif",
-  Prod(
-    N[Function],
+  prod(
+    n[Function],
     {
-      Or[#Opt[#T[pub]] #T[fn] #N[Ident] #T[\(] #Opt[#N[Params]] #T[\)] #N[Block]][function definition]
+      alt[#opt[#t[pub]] #t[fn] #n[Ident] #t[\(] #opt[#n[Params]] #t[\)] #n[Block]][function definition]
     },
   ),
-  Prod(
-    N[Type],
+  prod(
+    n[Type],
     {
-      Or[#N[Ident] #Opt[#N[Generics]]][named type]
-      Or[#T[&] #Opt[#N[Lifetime]] #Opt[#T[mut]] #N[Type]][reference type]
-      Or[#T[\[] #N[Type] #T[\]]][slice type]
+      alt[#n[Ident] #opt[#n[Generics]]][named type]
+      alt[#t[&] #opt[#n[Lifetime]] #opt[#t[mut]] #n[Type]][reference type]
+      alt[#t[\[] #n[Type] #t[\]]][slice type]
     },
   ),
 )
@@ -156,20 +169,20 @@ This approach optimizes horizontal space while maintaining readability.
 #ebnf(
   mono-font: "Fira Mono",
   body-font: "IBM Plex Serif",
-  Prod(
-    N[ClassDecl],
+  prod(
+    n[ClassDecl],
     {
-      Or[#Opt[#N[Modifier]] #T[class] #N[Ident] #Opt[#T[extends] #N[Type]] #N[ClassBody]][class declaration]
+      alt[#opt[#n[Modifier]] #t[class] #n[Ident] #opt[#t[extends] #n[Type]] #n[ClassBody]][class declaration]
     },
   ),
-  Prod(
-    N[Modifier],
+  prod(
+    n[Modifier],
     {
-      Or[#T[public]][access modifier]
-      Or[#T[private]][]
-      Or[#T[protected]][]
-      Or[#T[static]][other modifiers]
-      Or[#T[final]][]
+      alt[#t[public]][access modifier]
+      alt[#t[private]][]
+      alt[#t[protected]][]
+      alt[#t[static]][other modifiers]
+      alt[#t[final]][]
     },
   ),
 )
