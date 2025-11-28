@@ -1,10 +1,9 @@
 #import "../ebnf.typ": *
 #set page(width: auto, height: auto, margin: .5cm, fill: white)
 
-// Java grammar example with custom fonts
+// Java grammar example with custom font
 #ebnf(
   mono-font: "Fira Mono",
-  body-font: "IBM Plex Serif",
   prod(
     n[ClassDecl],
     {

@@ -1,10 +1,9 @@
 #import "../ebnf.typ": *
 #set page(width: auto, height: auto, margin: .5cm, fill: white)
 
-// Rust grammar example with custom fonts (uses default colorful scheme)
+// Rust grammar example with custom font (uses default colorful scheme)
 #ebnf(
   mono-font: "JetBrains Mono",
-  body-font: "DejaVu Serif",
   prod(
     n[Function],
     {

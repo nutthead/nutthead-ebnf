@@ -5,7 +5,6 @@
   terminal: none,
   operator: none,
   delim: none,
-  annot: none,
   comment: none,
 )
 
@@ -16,7 +15,6 @@
   terminal: rgb("#26a269"),
   operator: rgb("#a51d2d"),
   delim: rgb("#5e5c64"),
-  annot: rgb("#986a44"),
   comment: rgb("#5e5c64"),
 )
 
@@ -32,13 +30,11 @@
   "terminal",
   "operator",
   "delim",
-  "annot",
   "comment",
 )
 
 #let _ebnf-state = state("ebnf", (
   mono-font: none,
-  body-font: none,
   colors: colors-colorful,
 ))
 
@@ -63,19 +59,15 @@
 
 #let _colorize(role, content) = context {
   let state = _ebnf-state.get()
-  let styled-content = if role == "annot" {
-    if state.body-font != none { text(font: state.body-font, content) } else { content }
-  } else {
-    if state.mono-font != none { text(font: state.mono-font, content) } else { content }
-  }
+  let styled-content = if state.mono-font != none {
+    text(font: state.mono-font, content)
+  } else { content }
   _styled(state.colors.at(role, default: none), styled-content)
 }
 
-#let _validate-fonts(mono-font, body-font) = {
-  for (name, val) in (("mono-font", mono-font), ("body-font", body-font)) {
-    if val != none and type(val) != str {
-      return (false, name + " must be string or none")
-    }
+#let _validate-font(mono-font) = {
+  if mono-font != none and type(mono-font) != str {
+    return (false, "mono-font must be string or none")
   }
   (true, none)
 }
@@ -92,16 +84,16 @@
 }
 
 #let _validate-prod(prod, n) = {
-  if type(prod) != array or prod.len() != 4 {
+  if type(prod) != array or prod.len() != 3 {
     return (false, "production #" + str(n) + " invalid")
   }
   let alts = prod.at(2)
   if type(alts) != array or alts.len() == 0 {
     return (false, "production #" + str(n) + " has no alternatives")
   }
-  for alt in alts {
-    if type(alt) != array or alt.len() != 2 {
-      return (false, "production #" + str(n) + " has invalid Or()")
+  for a in alts {
+    if type(a) != array or a.len() != 2 {
+      return (false, "production #" + str(n) + " has invalid alt()")
     }
   }
   (true, none)
@@ -119,40 +111,27 @@
 }
 
 #let _prod-to-rows(idx, prod, production-spacing) = {
-  let (lhs, delim, alts, annot) = prod
+  let (lhs, delim, alts) = prod
   let delim = if delim == auto { "::=" } else { delim }
-
-  // Determine annotation strategy
-  let first-annot = alts.at(0).at(1)
-  let multi-annot = alts.len() > 1 and alts.slice(1).any(a => a.at(1) != none)
-
-  // Helper: create a full-width annotation row
-  let annot-row(c) = (
-    grid.cell(colspan: 4, if idx > 0 {
-      [#v(production-spacing)#_colorize("annot", c)]
-    } else { _colorize("annot", c) }),
-  )
 
   let rows = ()
 
-  // Add production-level annotation
-  if annot != none { rows.push(annot-row(annot)) }
-
-  // Add first alternative's annotation (only if single-annotation mode)
-  if first-annot != none and not multi-annot {
-    rows.push(annot-row(first-annot))
+  // Add spacer row before production (except first)
+  if idx > 0 {
+    rows.push((grid.cell(colspan: 4, v(production-spacing)),))
   }
 
   // Add alternative rows
-  for (i, (rhs, rhs-annot)) in alts.enumerate() {
-    let acol = if rhs-annot != none and multi-annot {
-      _colorize("annot", rhs-annot)
+  for (i, (rhs, comment)) in alts.enumerate() {
+    let has-comment = comment != none and comment != []
+    let comment-col = if has-comment {
+      _colorize("comment", [(\* #comment \*)])
     } else { [] }
 
     let row = if i == 0 {
-      (_colorize("lhs", lhs), _colorize("delim", delim), rhs, acol)
+      (_colorize("lhs", lhs), _colorize("delim", delim), rhs, comment-col)
     } else {
-      ([], _colorize("delim", "|"), rhs, acol)
+      ([], _colorize("delim", "|"), rhs, comment-col)
     }
     rows.push(row)
   }
@@ -231,44 +210,38 @@
   _styled(state.colors.at("terminal", default: none), "ε")
 }
 
-/// Alternative in a production
-#let alt(var, annot) = (var, annot)
+/// Alternative in a production with optional comment
+#let alt(var, comment) = (var, comment)
 
 /// Production rule
-#let prod(lhs, annot: none, delim: auto, ..rhs) = {
-  (
-    lhs,
-    delim,
-    rhs.pos().flatten().chunks(2).map(c => (c.at(0), c.at(1, default: none))),
-    annot,
-  )
+#let prod(lhs, delim: auto, ..rhs) = {
+  (lhs, delim, rhs.pos().flatten().chunks(2).map(c => (c.at(0), c.at(1, default: none))))
 }
 
 /// Renders an EBNF grammar as a formatted grid.
 ///
 /// The grammar is displayed as a 4-column table with columns for:
-/// left-hand side (LHS), delimiter, right-hand side (RHS), and annotations.
+/// left-hand side (LHS), delimiter, right-hand side (RHS), and comments.
 /// Multiple alternatives for a production are shown on separate rows with `|` delimiters.
+/// Comments are rendered as ISO 14977 `(* ... *)` notation in the 4th column.
 ///
 /// - mono-font (string, none): Font for grammar symbols. If `none`, uses document default.
-/// - body-font (string, none): Font for annotation text. If `none`, uses document default.
 /// - colors (dictionary): Color scheme for syntax highlighting. Use `colors-plain` for no colors
-///   or `colors-colorful` (default). Keys: `lhs`, `nonterminal`, `terminal`, `operator`, `delim`, `annot`.
+///   or `colors-colorful` (default). Keys: `lhs`, `nonterminal`, `terminal`, `operator`, `delim`, `comment`.
 /// - production-spacing (length): Extra vertical space between productions. Default: `0.5em`.
 /// - column-gap (length): Horizontal spacing between grid columns. Default: `0.75em`.
 /// - row-gap (length): Vertical spacing between grid rows. Default: `0.5em`.
-/// - body (Prod): One or more production rules created with `Prod()`.
+/// - body (prod): One or more production rules created with `prod()`.
 /// -> content
 #let ebnf(
   mono-font: none,
-  body-font: none,
   colors: colors-colorful,
   production-spacing: _production-spacing,
   column-gap: _column-gap,
   row-gap: _row-gap,
   ..body,
 ) = {
-  let (ok, err) = _validate-fonts(mono-font, body-font)
+  let (ok, err) = _validate-font(mono-font)
   if not ok { return _error(err) }
 
   let (ok, err) = _validate-colors(colors)
@@ -280,7 +253,6 @@
 
   _ebnf-state.update((
     mono-font: mono-font,
-    body-font: body-font,
     colors: colors,
   ))
 
@@ -289,10 +261,5 @@
     .map(((idx, prod)) => _prod-to-rows(idx, prod, production-spacing).flatten())
     .join()
 
-  grid(columns: 4, align: (
-      left,
-      center,
-      left,
-      left,
-    ), column-gutter: column-gap, row-gutter: row-gap, ..cells)
+  grid(columns: 4, align: (left, center, left, left), column-gutter: column-gap, row-gutter: row-gap, ..cells)
 }

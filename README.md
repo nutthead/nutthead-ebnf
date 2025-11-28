@@ -1,6 +1,6 @@
 # nutthead-ebnf
 
-A Typst package for rendering Extended Backus-Naur Form (EBNF) grammars with customizable fonts and color schemes.
+A Typst package for rendering Extended Backus-Naur Form (EBNF) grammars with customizable fonts and color schemes. Fully compliant with ISO 14977.
 
 ![Rust grammar example](examples/rust.svg)
 
@@ -11,7 +11,6 @@ A Typst package for rendering Extended Backus-Naur Form (EBNF) grammars with cus
 
 #ebnf(
   mono-font: "JetBrains Mono",
-  body-font: "DejaVu Serif",
   prod(
     n[Expression],
     {
@@ -31,12 +30,11 @@ A Typst package for rendering Extended Backus-Naur Form (EBNF) grammars with cus
 
 ### `ebnf()`
 
-Renders an EBNF grammar as a formatted grid.
+Renders an EBNF grammar as a formatted 4-column grid (LHS, delimiter, RHS, comments).
 
 | Parameter            | Type            | Default           | Description                              |
 | -------------------- | --------------- | ----------------- | ---------------------------------------- |
 | `mono-font`          | `str` or `none` | `none`            | Font for grammar symbols                 |
-| `body-font`          | `str` or `none` | `none`            | Font for annotations                     |
 | `colors`             | `dict`          | `colors-colorful` | Color scheme                             |
 | `production-spacing` | `length`        | `0.5em`           | Extra vertical space between productions |
 | `column-gap`         | `length`        | `0.75em`          | Horizontal spacing between columns       |
@@ -50,20 +48,20 @@ Defines a production rule.
 ```typst
 prod(
   n[NonTerminal],        // Left-hand side
-  annot: "description",  // Optional production annotation
   delim: "::=",          // Optional custom delimiter (default: auto)
   {
-    alt[...][annotation]  // One or more alternatives
+    alt[...][comment]    // One or more alternatives with optional comments
   },
 )
 ```
 
 ### `alt()`
 
-Defines an alternative in a production's right-hand side.
+Defines an alternative in a production's right-hand side. The second argument is an optional comment rendered as `(* ... *)` in a dedicated column.
 
 ```typst
-alt[#t[terminal] #n[NonTerminal]][optional annotation]
+alt[#t[terminal] #n[NonTerminal]][optional comment]
+alt[#t[another]][]  // Empty comment renders nothing
 ```
 
 ### Symbol Functions
@@ -80,14 +78,14 @@ alt[#t[terminal] #n[NonTerminal]][optional annotation]
 
 ### ISO 14977 Functions
 
-| Function              | Description                    | Example                          |
-| --------------------- | ------------------------------ | -------------------------------- |
-| `exc(a, b)`           | Exception: `a − b` (a except b)| `exc(n[letter], t[x])`           |
-| `seq(...)`            | Concatenation: `a , b , c`     | `seq(t[a], t[b], t[c])`          |
-| `times(n, x)`         | Repetition count: `n ∗ x`      | `times(3, t[a])`                 |
-| `special[...]`        | Special sequence: `? ... ?`    | `special[any character]`         |
-| `ebnf-comment[...]`   | Comment: `(* ... *)`           | `ebnf-comment[deprecated]`       |
-| `empty`               | Empty/epsilon: `ε`             | `alt[#empty][empty production]`  |
+| Function              | Description                     | Example                          |
+| --------------------- | ------------------------------- | -------------------------------- |
+| `exc(a, b)`           | Exception: `a − b` (a except b) | `exc(n[letter], t[x])`           |
+| `seq(...)`            | Concatenation: `a , b , c`      | `seq(t[a], t[b], t[c])`          |
+| `times(n, x)`         | Repetition count: `n ∗ x`       | `times(3, t[a])`                 |
+| `special[...]`        | Special sequence: `? ... ?`     | `special[any character]`         |
+| `ebnf-comment[...]`   | Inline comment: `(* ... *)`     | `ebnf-comment[see 4.2]`          |
+| `empty`               | Empty/epsilon: `ε`              | `alt[#empty][empty production]`  |
 
 ## Color Schemes
 
@@ -102,7 +100,6 @@ Distinct colors for each element type:
 - **Terminal**: Green (`#26a269`)
 - **Operator**: Red (`#a51d2d`)
 - **Delimiter**: Gray (`#5e5c64`)
-- **Annotation**: Brown (`#986a44`)
 - **Comment**: Gray (`#5e5c64`)
 
 ### `colors-plain`
@@ -118,21 +115,25 @@ No colors applied (all elements use default text color).
   terminal: rgb("#008000"),
   operator: rgb("#ff0000"),
   delim: rgb("#808080"),
-  annot: rgb("#666666"),
   comment: rgb("#808080"),
 )
 
 #ebnf(colors: my-colors, ...)
 ```
 
-## Annotation Behavior
+## Comments
 
-Annotations are displayed based on context:
+Comments are specified as the second argument to `alt()` and rendered as ISO 14977 `(* ... *)` notation in a dedicated fourth column:
 
-- **Single alternative**: Annotation appears above the production rule
-- **Multiple alternatives with annotations**: Each annotation appears in a dedicated column
+```typst
+prod(n[Modifier], {
+  alt[#t[public]][access modifier]   // → (* access modifier *)
+  alt[#t[private]][]                 // → (no comment)
+  alt[#t[static]][other modifiers]   // → (* other modifiers *)
+})
+```
 
-This approach optimizes horizontal space while maintaining readability.
+For inline comments within the RHS, use `ebnf-comment[...]`.
 
 ## Examples
 
@@ -143,7 +144,6 @@ This approach optimizes horizontal space while maintaining readability.
 
 #ebnf(
   mono-font: "JetBrains Mono",
-  body-font: "DejaVu Serif",
   prod(
     n[Function],
     {
@@ -168,7 +168,6 @@ This approach optimizes horizontal space while maintaining readability.
 
 #ebnf(
   mono-font: "Fira Mono",
-  body-font: "IBM Plex Serif",
   prod(
     n[ClassDecl],
     {
