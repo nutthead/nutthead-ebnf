@@ -1,48 +1,48 @@
-#import "@preview/nutthead-ebnf:0.1.0": *
+#import "../ebnf.typ": *
 
 #set page(width: auto, height: auto, margin: .5cm, fill: white)
 
 // Rust grammar example with custom font (uses default colorful scheme)
-#ebnf(
+#syntax(
   mono-font: "JetBrains Mono",
-  prod(
-    n[Function],
+  syntax-rule(
+    meta-identifier[Function],
     {
-      alt[#opt[#t[pub]] #t[fn] #n[Ident] #opt[#n[Generics]] #t[\(] #opt[#n[Params]] #t[\)] #opt[#n[ReturnType]] #n[Block]][function definition]
+      definitions-list[#optional-sequence[#terminal-string[pub]] #terminal-string[fn] #meta-identifier[Ident] #optional-sequence[#meta-identifier[Generics]] #terminal-string[\(] #optional-sequence[#meta-identifier[Params]] #terminal-string[\)] #optional-sequence[#meta-identifier[ReturnType]] #meta-identifier[Block]][function definition]
     },
   ),
-  prod(
-    n[Generics],
+  syntax-rule(
+    meta-identifier[Generics],
     {
-      alt[#t[\<] #n[GenericParam] #rep[#t[,] #n[GenericParam]] #t[\>]][generic parameters]
+      definitions-list[#terminal-string[\<] #meta-identifier[GenericParam] #repeated-sequence[#terminal-string[,] #meta-identifier[GenericParam]] #terminal-string[\>]][generic parameters]
     },
   ),
-  prod(n[GenericParam], {
-    alt[#n[Ident] #opt[#t[:] #n[Bounds]]][type parameter]
-    alt[#n[Lifetime]][lifetime parameter]
+  syntax-rule(meta-identifier[GenericParam], {
+    definitions-list[#meta-identifier[Ident] #optional-sequence[#terminal-string[:] #meta-identifier[Bounds]]][type parameter]
+    definitions-list[#meta-identifier[Lifetime]][lifetime parameter]
   }),
-  prod(n[Bounds], {
-    alt[#n[Bound] #rep[#t[+] #n[Bound]]][trait bounds]
+  syntax-rule(meta-identifier[Bounds], {
+    definitions-list[#meta-identifier[Bound] #repeated-sequence[#terminal-string[+] #meta-identifier[Bound]]][trait bounds]
   }),
-  prod(n[ReturnType], {
-    alt[#t[\-\>] #n[Type]][return type]
+  syntax-rule(meta-identifier[ReturnType], {
+    definitions-list[#terminal-string[\-\>] #meta-identifier[Type]][return type]
   }),
-  prod(n[Type], {
-    alt[#n[Ident] #opt[#n[Generics]]][named type]
-    alt[#t[&] #opt[#n[Lifetime]] #opt[#t[mut]] #n[Type]][reference type]
-    alt[#t[\[] #n[Type] #t[\]]][slice type]
-    alt[#grp[#t[\(] #n[Type] #rep[#t[,] #n[Type]] #t[\)]]][tuple type]
+  syntax-rule(meta-identifier[Type], {
+    definitions-list[#meta-identifier[Ident] #optional-sequence[#meta-identifier[Generics]]][named type]
+    definitions-list[#terminal-string[&] #optional-sequence[#meta-identifier[Lifetime]] #optional-sequence[#terminal-string[mut]] #meta-identifier[Type]][reference type]
+    definitions-list[#terminal-string[\[] #meta-identifier[Type] #terminal-string[\]]][slice type]
+    definitions-list[#grouped-sequence[#terminal-string[\(] #meta-identifier[Type] #repeated-sequence[#terminal-string[,] #meta-identifier[Type]] #terminal-string[\)]]][tuple type]
   }),
-  prod(n[Lifetime], {
-    alt[#t[\'] #n[Ident]][lifetime]
+  syntax-rule(meta-identifier[Lifetime], {
+    definitions-list[#terminal-string[\'] #meta-identifier[Ident]][lifetime]
   }),
-  prod(
-    n[Struct],
+  syntax-rule(
+    meta-identifier[Struct],
     {
-      alt[#opt[#t[pub]] #t[struct] #n[Ident] #opt[#n[Generics]] #t[\{] #rep[#n[Field]] #t[\}]][struct definition]
+      definitions-list[#optional-sequence[#terminal-string[pub]] #terminal-string[struct] #meta-identifier[Ident] #optional-sequence[#meta-identifier[Generics]] #terminal-string[\{] #repeated-sequence[#meta-identifier[Field]] #terminal-string[\}]][struct definition]
     },
   ),
-  prod(n[Field], {
-    alt[#opt[#t[pub]] #n[Ident] #t[:] #n[Type] #opt[#t[,]]][field]
+  syntax-rule(meta-identifier[Field], {
+    definitions-list[#optional-sequence[#terminal-string[pub]] #meta-identifier[Ident] #terminal-string[:] #meta-identifier[Type] #optional-sequence[#terminal-string[,]]][field]
   }),
 )

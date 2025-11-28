@@ -1,49 +1,49 @@
-#import "@preview/nutthead-ebnf:0.1.0": *
+#import "../ebnf.typ": *
 
 #set page(width: auto, height: auto, margin: .5cm, fill: white)
 
 // Java grammar example with custom font
-#ebnf(
+#syntax(
   mono-font: "Fira Mono",
-  prod(
-    n[ClassDecl],
+  syntax-rule(
+    meta-identifier[ClassDecl],
     {
-      alt[#opt[#n[Modifier]] #t[class] #n[Ident] #opt[#t[extends] #n[Type]] #n[ClassBody]][class declaration]
+      definitions-list[#optional-sequence[#meta-identifier[Modifier]] #terminal-string[class] #meta-identifier[Ident] #optional-sequence[#terminal-string[extends] #meta-identifier[Type]] #meta-identifier[ClassBody]][class declaration]
     },
   ),
-  prod(n[Modifier], {
-    alt[#t[public]][access modifier]
-    alt[#t[private]][]
-    alt[#t[protected]][]
-    alt[#t[static]][other modifiers]
-    alt[#t[final]][]
-    alt[#t[abstract]][]
+  syntax-rule(meta-identifier[Modifier], {
+    definitions-list[#terminal-string[public]][access modifier]
+    definitions-list[#terminal-string[private]][]
+    definitions-list[#terminal-string[protected]][]
+    definitions-list[#terminal-string[static]][other modifiers]
+    definitions-list[#terminal-string[final]][]
+    definitions-list[#terminal-string[abstract]][]
   }),
-  prod(n[ClassBody], {
-    alt[#t[\{] #rep[#n[Member]] #t[\}]][class body]
+  syntax-rule(meta-identifier[ClassBody], {
+    definitions-list[#terminal-string[\{] #repeated-sequence[#meta-identifier[Member]] #terminal-string[\}]][class body]
   }),
-  prod(n[Member], {
-    alt[#n[FieldDecl]][member declaration]
-    alt[#n[MethodDecl]][]
-    alt[#n[ConstructorDecl]][]
+  syntax-rule(meta-identifier[Member], {
+    definitions-list[#meta-identifier[FieldDecl]][member declaration]
+    definitions-list[#meta-identifier[MethodDecl]][]
+    definitions-list[#meta-identifier[ConstructorDecl]][]
   }),
-  prod(
-    n[MethodDecl],
+  syntax-rule(
+    meta-identifier[MethodDecl],
     {
-      alt[#rep[#n[Modifier]] #n[Type] #n[Ident] #t[\(] #opt[#n[Params]] #t[\)] #n[Block]][method]
+      definitions-list[#repeated-sequence[#meta-identifier[Modifier]] #meta-identifier[Type] #meta-identifier[Ident] #terminal-string[\(] #optional-sequence[#meta-identifier[Params]] #terminal-string[\)] #meta-identifier[Block]][method]
     },
   ),
-  prod(n[Params], {
-    alt[#n[Param] #rep[#t[,] #n[Param]]][parameter list]
+  syntax-rule(meta-identifier[Params], {
+    definitions-list[#meta-identifier[Param] #repeated-sequence[#terminal-string[,] #meta-identifier[Param]]][parameter list]
   }),
-  prod(n[Type], {
-    alt[#n[PrimitiveType]][type]
-    alt[#n[ReferenceType]][]
+  syntax-rule(meta-identifier[Type], {
+    definitions-list[#meta-identifier[PrimitiveType]][type]
+    definitions-list[#meta-identifier[ReferenceType]][]
   }),
-  prod(n[PrimitiveType], {
-    alt[#t[int]][primitive types]
-    alt[#t[boolean]][]
-    alt[#t[char]][]
-    alt[#t[void]][]
+  syntax-rule(meta-identifier[PrimitiveType], {
+    definitions-list[#terminal-string[int]][primitive types]
+    definitions-list[#terminal-string[boolean]][]
+    definitions-list[#terminal-string[char]][]
+    definitions-list[#terminal-string[void]][]
   }),
 )

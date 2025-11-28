@@ -2,25 +2,31 @@
 
 A Typst package for rendering Extended Backus-Naur Form (EBNF) grammars with customizable fonts and color schemes. Fully compliant with ISO 14977.
 
-![Rust grammar example](examples/rust.svg)
+## Java Grammar Example
+
+![Java grammar example](examples/java.svg)
+
+## ISO 14977 Grammar Example
+
+![ISO 14977 grammar example](examples/iso-14977.svg)
 
 ## Usage
 
 ```typst
 #import "@preview/nutthead-ebnf:0.1.0": *
 
-#ebnf(
+#syntax(
   mono-font: "JetBrains Mono",
-  prod(
-    n[Expression],
+  syntax-rule(
+    meta-identifier[Expression],
     {
-      alt[#n[Term] #rep[#t[\+] #n[Term]]][arithmetic expression]
+      definitions-list[#meta-identifier[Term] #repeated-sequence[#terminal-string[\+] #meta-identifier[Term]]][arithmetic expression]
     },
   ),
-  prod(
-    n[Term],
+  syntax-rule(
+    meta-identifier[Term],
     {
-      alt[#n[Factor] #rep[#t[\*] #n[Factor]]][multiplication]
+      definitions-list[#meta-identifier[Factor] #repeated-sequence[#terminal-string[\*] #meta-identifier[Factor]]][multiplication]
     },
   ),
 )
@@ -28,7 +34,7 @@ A Typst package for rendering Extended Backus-Naur Form (EBNF) grammars with cus
 
 ## API Reference
 
-### `ebnf()`
+### `syntax()`
 
 Renders an EBNF grammar as a formatted 4-column grid (LHS, delimiter, RHS, comments).
 
@@ -39,53 +45,46 @@ Renders an EBNF grammar as a formatted 4-column grid (LHS, delimiter, RHS, comme
 | `production-spacing` | `length`        | `0.5em`           | Extra vertical space between productions |
 | `column-gap`         | `length`        | `0.75em`          | Horizontal spacing between columns       |
 | `row-gap`            | `length`        | `0.5em`           | Vertical spacing between rows            |
-| `..body`             | `prod()`        | —                 | Production rules                         |
+| `..body`             | `syntax-rule()` | —                 | Production rules                         |
 
-### `prod()`
+### `syntax-rule()`
 
 Defines a production rule.
 
 ```typst
-prod(
-  n[NonTerminal],        // Left-hand side
-  delim: "::=",          // Optional custom delimiter (default: auto)
+syntax-rule(
+  meta-identifier[NonTerminal],  // Left-hand side
+  delim: "::=",                  // Optional custom delimiter (default: auto)
   {
-    alt[...][comment]    // One or more alternatives with optional comments
+    definitions-list[...][comment]  // One or more alternatives with optional comments
   },
 )
 ```
 
-### `alt()`
+### `definitions-list()`
 
 Defines an alternative in a production's right-hand side. The second argument is an optional comment rendered as `(* ... *)` in a dedicated column.
 
 ```typst
-alt[#t[terminal] #n[NonTerminal]][optional comment]
-alt[#t[another]][]  // Empty comment renders nothing
+definitions-list[#terminal-string[terminal] #meta-identifier[NonTerminal]][optional comment]
+definitions-list[#terminal-string[another]][]  // Empty comment renders nothing
 ```
 
 ### Symbol Functions
 
-| Function     | Description                      | Example                  |
-| ------------ | -------------------------------- | ------------------------ |
-| `t[...]`     | Terminal symbol                  | `t[if]`                  |
-| `n[...]`     | Non-terminal reference (italic)  | `n[Expr]`                |
-| `nt[...]`    | Non-terminal with angle brackets | `nt[digit]` → ⟨_digit_⟩  |
-| `opt[...]`   | Optional: `[content]`            | `opt[#t[else]]`          |
-| `rep[...]`   | Zero or more: `{content}`        | `rep[#n[Stmt]]`          |
-| `rep-1[...]` | One or more: `{content}+`        | `rep-1[#t[a]]`           |
-| `grp[...]`   | Grouping: `(content)`            | `grp[#t[a] #t[b]]`       |
-
-### ISO 14977 Functions
-
-| Function              | Description                     | Example                          |
-| --------------------- | ------------------------------- | -------------------------------- |
-| `exc(a, b)`           | Exception: `a − b` (a except b) | `exc(n[letter], t[x])`           |
-| `seq(...)`            | Concatenation: `a , b , c`      | `seq(t[a], t[b], t[c])`          |
-| `times(n, x)`         | Repetition count: `n ∗ x`       | `times(3, t[a])`                 |
-| `special[...]`        | Special sequence: `? ... ?`     | `special[any character]`         |
-| `ebnf-comment[...]`   | Inline comment: `(* ... *)`     | `ebnf-comment[see 4.2]`          |
-| `empty`               | Empty/epsilon: `ε`              | `alt[#empty][empty production]`  |
+| Function                 | Description                     | Example                                                     |
+| ------------------------ | ------------------------------- | ----------------------------------------------------------- |
+| `terminal-string[...]`   | Terminal symbol                 | `terminal-string[if]`                                       |
+| `meta-identifier[...]`   | Non-terminal reference (italic) | `meta-identifier[Expr]`                                     |
+| `optional-sequence[...]` | Optional: `[content]`           | `optional-sequence[#terminal-string[else]]`                 |
+| `repeated-sequence[...]` | Repetition: `{content}`         | `repeated-sequence[#meta-identifier[Stmt]]`                 |
+| `grouped-sequence[...]`  | Grouping: `(content)`           | `grouped-sequence[#terminal-string[a] #terminal-string[b]]` |
+| `exception(a, b)`        | Exception: `a − b`              | `exception(meta-identifier[letter], terminal-string[x])`    |
+| `single-definition(...)` | Concatenation: `a , b , c`      | `single-definition(terminal-string[a], terminal-string[b])` |
+| `syntactic-factor(n, x)` | Repetition count: `n ∗ x`       | `syntactic-factor(3, terminal-string[a])`                   |
+| `special-sequence[...]`  | Special sequence: `? ... ?`     | `special-sequence[any character]`                           |
+| `comment[...]`           | Inline comment: `(* ... *)`     | `comment[see 4.2]`                                          |
+| `empty-sequence`         | Empty/epsilon: `ε`              | `definitions-list[#empty-sequence][empty production]`       |
 
 ## Color Schemes
 
@@ -118,25 +117,25 @@ No colors applied (all elements use default text color).
   comment: rgb("#808080"),
 )
 
-#ebnf(
+#syntax(
   colors: my-colors,
-  prod(n[S], { alt[#t[a] #n[B]][example] }),
+  syntax-rule(meta-identifier[S], { definitions-list[#terminal-string[a] #meta-identifier[B]][example] }),
 )
 ```
 
 ## Comments
 
-Comments are specified as the second argument to `alt()` and rendered as ISO 14977 `(* ... *)` notation in a dedicated fourth column:
+Comments are specified as the second argument to `definitions-list()` and rendered as ISO 14977 `(* ... *)` notation in a dedicated fourth column:
 
 ```typst
-prod(n[Modifier], {
-  alt[#t[public]][access modifier]   // → (* access modifier *)
-  alt[#t[private]][]                 // → (no comment)
-  alt[#t[static]][other modifiers]   // → (* other modifiers *)
+syntax-rule(meta-identifier[Modifier], {
+  definitions-list[#terminal-string[public]][access modifier]   // → (* access modifier *)
+  definitions-list[#terminal-string[private]][]                 // → (no comment)
+  definitions-list[#terminal-string[static]][other modifiers]   // → (* other modifiers *)
 })
 ```
 
-For inline comments within the RHS, use `ebnf-comment[...]`.
+For inline comments within the RHS, use `comment[...]`.
 
 ## Examples
 
@@ -145,20 +144,20 @@ For inline comments within the RHS, use `ebnf-comment[...]`.
 ```typst
 #import "@preview/nutthead-ebnf:0.1.0": *
 
-#ebnf(
+#syntax(
   mono-font: "JetBrains Mono",
-  prod(
-    n[Function],
+  syntax-rule(
+    meta-identifier[Function],
     {
-      alt[#opt[#t[pub]] #t[fn] #n[Ident] #t[\(] #opt[#n[Params]] #t[\)] #n[Block]][function definition]
+      definitions-list[#optional-sequence[#terminal-string[pub]] #terminal-string[fn] #meta-identifier[Ident] #terminal-string[\(] #optional-sequence[#meta-identifier[Params]] #terminal-string[\)] #meta-identifier[Block]][function definition]
     },
   ),
-  prod(
-    n[Type],
+  syntax-rule(
+    meta-identifier[Type],
     {
-      alt[#n[Ident] #opt[#n[Generics]]][named type]
-      alt[#t[&] #opt[#n[Lifetime]] #opt[#t[mut]] #n[Type]][reference type]
-      alt[#t[\[] #n[Type] #t[\]]][slice type]
+      definitions-list[#meta-identifier[Ident] #optional-sequence[#meta-identifier[Generics]]][named type]
+      definitions-list[#terminal-string[&] #optional-sequence[#meta-identifier[Lifetime]] #optional-sequence[#terminal-string[mut]] #meta-identifier[Type]][reference type]
+      definitions-list[#terminal-string[\[] #meta-identifier[Type] #terminal-string[\]]][slice type]
     },
   ),
 )
@@ -169,22 +168,22 @@ For inline comments within the RHS, use `ebnf-comment[...]`.
 ```typst
 #import "@preview/nutthead-ebnf:0.1.0": *
 
-#ebnf(
+#syntax(
   mono-font: "Fira Mono",
-  prod(
-    n[ClassDecl],
+  syntax-rule(
+    meta-identifier[ClassDecl],
     {
-      alt[#opt[#n[Modifier]] #t[class] #n[Ident] #opt[#t[extends] #n[Type]] #n[ClassBody]][class declaration]
+      definitions-list[#optional-sequence[#meta-identifier[Modifier]] #terminal-string[class] #meta-identifier[Ident] #optional-sequence[#terminal-string[extends] #meta-identifier[Type]] #meta-identifier[ClassBody]][class declaration]
     },
   ),
-  prod(
-    n[Modifier],
+  syntax-rule(
+    meta-identifier[Modifier],
     {
-      alt[#t[public]][access modifier]
-      alt[#t[private]][]
-      alt[#t[protected]][]
-      alt[#t[static]][other modifiers]
-      alt[#t[final]][]
+      definitions-list[#terminal-string[public]][access modifier]
+      definitions-list[#terminal-string[private]][]
+      definitions-list[#terminal-string[protected]][]
+      definitions-list[#terminal-string[static]][other modifiers]
+      definitions-list[#terminal-string[final]][]
     },
   ),
 )
