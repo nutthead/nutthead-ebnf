@@ -1,4 +1,4 @@
-#import "@preview/nutthead-ebnf:0.1.0": *
+#import "../ebnf.typ": *
 
 #set page(width: auto, height: auto, margin: .5cm, fill: white)
 
