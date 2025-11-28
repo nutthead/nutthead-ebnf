@@ -33,12 +33,15 @@ A Typst package for rendering Extended Backus-Naur Form (EBNF) grammars with cus
 
 Renders an EBNF grammar as a formatted grid.
 
-| Parameter   | Type            | Default           | Description              |
-| ----------- | --------------- | ----------------- | ------------------------ |
-| `mono-font` | `str` or `none` | `none`            | Font for grammar symbols |
-| `body-font` | `str` or `none` | `none`            | Font for annotations     |
-| `colors`    | `dict`          | `colors-colorful` | Color scheme             |
-| `..body`    | `Prod()`        | —                 | Production rules         |
+| Parameter            | Type            | Default           | Description                              |
+| -------------------- | --------------- | ----------------- | ---------------------------------------- |
+| `mono-font`          | `str` or `none` | `none`            | Font for grammar symbols                 |
+| `body-font`          | `str` or `none` | `none`            | Font for annotations                     |
+| `colors`             | `dict`          | `colors-colorful` | Color scheme                             |
+| `production-spacing` | `length`        | `0.5em`           | Extra vertical space between productions |
+| `column-gap`         | `length`        | `0.75em`          | Horizontal spacing between columns       |
+| `row-gap`            | `length`        | `0.5em`           | Vertical spacing between rows            |
+| `..body`             | `Prod()`        | —                 | Production rules                         |
 
 ### `Prod()`
 
